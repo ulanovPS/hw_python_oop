@@ -31,6 +31,7 @@ class Training:
     LEN_STEP: float = 0.65
     M_IN_KM: int = 1000
     MIN_IN_HOUR: float = 60
+    import math
 
     def __init__(self,
                  action: int,
