@@ -1,3 +1,6 @@
+from unicodedata import name
+
+
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
@@ -112,7 +115,7 @@ class Swimming(Training):
         self.length_pool = length_pool
         self.count_pool = count_pool
 
-    def get_mean_speed(self, heilength_pool, count_pool) -> float:
+    def get_mean_speed(self, length_pool, count_pool) -> float:
         """Получить среднюю скорость движения."""
         return (self.length_pool * self.count_pool
                 / self.M_IN_KM / self.duration / self.MIN_IN_HOUR)
@@ -129,18 +132,16 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    training_type = {'SWM': Swimming,
-                     'RUN': Running,
-                     'WLK': SportsWalking}
-    if workout_type in training_type.keys():
-        workout_name = training_type[workout_type]
-    return workout_name(data)
+    training_type: dict[str, Training] = {'SWM': Swimming,
+                                          'RUN': Running,
+                                          'WLK': SportsWalking}
+    return training_type[workout_type](*data)
 
 
 def main(training: Training) -> None:
     """Главная функция."""
     info = training.show_training_info()
-    print(info.get_message())
+    print(info.get_message() * name)
 
 
 if __name__ == '__main__':
