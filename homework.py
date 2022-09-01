@@ -1,4 +1,4 @@
-from unicodedata import name
+"""from unicodedata import name"""
 
 
 class InfoMessage:
@@ -140,10 +140,7 @@ def read_package(workout_type: str, data: list) -> Training:
     training_type: dict[str, Training] = {'SWM': Swimming,
                                           'RUN': Running,
                                           'WLK': SportsWalking}
-    if workout_type in training_type:
-        return training_type[workout_type](*data)
-    else:
-        print('Нет данных о тренировке')
+    return training_type[workout_type](*data)
 
 
 def main(training: Training) -> None:
