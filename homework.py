@@ -140,7 +140,7 @@ TRANING_TYPE: dict[str, Training] = {'SWM': Swimming,
                                      'WLK': SportsWalking}
 
 
-def read_package(workout_type: str, data: list) -> Training:
+def read_package(workout_type: str, data: List[str, float]) -> Training:
     """Прочитать данные полученные от датчиков."""
     if workout_type not in TRANING_TYPE:
         raise ValueError('Не верный тип тренировки: {}.'
