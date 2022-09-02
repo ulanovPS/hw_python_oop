@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 
 
@@ -141,7 +140,7 @@ TRANING_TYPE: dict[str, Training] = {'SWM': Swimming,
                                      'WLK': SportsWalking}
 
 
-def read_package(workout_type: str, data: list[str, float]) -> Training:
+def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
     if workout_type not in TRANING_TYPE:
         raise ValueError('Не верный тип тренировки: {}.'
