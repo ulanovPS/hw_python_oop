@@ -1,3 +1,4 @@
+from typing import list
 from dataclasses import dataclass
 
 
