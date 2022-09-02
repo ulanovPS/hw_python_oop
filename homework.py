@@ -1,4 +1,3 @@
-from typing import list
 from dataclasses import dataclass
 
 
@@ -136,9 +135,9 @@ class Swimming(Training):
         return self.action * self.LEN_STEP / self.M_IN_KM
 
 
-TRANING_TYPE: dict[str, Training] = {'SWM': Swimming,
-                                     'RUN': Running,
-                                     'WLK': SportsWalking}
+TRANING_TYPE = {'SWM': Swimming,
+                'RUN': Running,
+                'WLK': SportsWalking}
 
 
 def read_package(workout_type: str, data: list) -> Training:
