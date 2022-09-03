@@ -4,11 +4,12 @@ from dataclasses import dataclass
 @dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
-    LINE_1 = "Тип тренировки: {}; "
-    LINE_2 = "Длительность: {:.3f} ч.; "
-    LINE_3 = "Дистанция: {:.3f} км; "
-    LINE_4 = "Ср. скорость: {:.3f} км/ч; "
-    LINE_5 = "Потрачено ккал: {:.3f}."
+    """Можно записать одну строку в одну переменную"""
+    LINE_OUTPUT = ("Тип тренировки: {}; "
+                   "Длительность: {:.3f} ч.; "
+                   "Дистанция: {:.3f} км; "
+                   "Ср. скорость: {:.3f} км/ч; "
+                   "Потрачено ккал: {:.3f}.")
     training_type: str
     duration: float
     distance: float
@@ -17,11 +18,11 @@ class InfoMessage:
 
     def get_message(self) -> str:
         """Получить дистанцию в км."""
-        return (f'{self.LINE_1.format(self.training_type)}'
-                f'{self.LINE_2.format(self.duration)}'
-                f'{self.LINE_3.format(self.distance)}'
-                f'{self.LINE_4.format(self.speed)}'
-                f'{self.LINE_5.format(self.calories)}')
+        return (self.LINE_OUTPUT.format(self.training_type,
+                                        self.duration,
+                                        self.distance,
+                                        self.speed,
+                                        self.calories))
 
 
 class Training:
@@ -29,8 +30,8 @@ class Training:
     LEN_STEP: float = 0.65  # stride length in meters
     M_IN_KM: float = 1000  # coefficient for converting meters to kilometers
     MIN_IN_HOUR: float = 60  # coefficient for converting minutes to hours
-
-    import math
+    VAL_CALORIE_CALC_18: float = 18  # coefficient for calculating calorie
+    VAL_CALORIE_CALC_20: float = 20  # coefficient for calculating calorie
 
     def __init__(self,
                  action: int,  # action in training
@@ -51,7 +52,7 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        raise NotImplementedError('Вызываемый метод не реализован')
+        raise NotImplementedError
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -65,13 +66,11 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    coeff_calorie_18: int = 18
-    coeff_calorie_20: int = 20
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        return ((self.coeff_calorie_18 * self.get_mean_speed()
-                - self.coeff_calorie_20) * self.weight_kg
+        return ((self.VAL_CALORIE_CALC_18 * self.get_mean_speed()
+                - self.VAL_CALORIE_CALC_20) * self.weight_kg
                 / self.M_IN_KM * self.duration_m
                 * self.MIN_IN_HOUR
                 )
@@ -80,7 +79,6 @@ class Running(Training):
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
     coeff_calorie_0_035: float = 0.035
-    coeff_calorie_2: int = 2
     coeff_calorie_0_029: float = 0.029
 
     def __init__(self,
@@ -94,8 +92,9 @@ class SportsWalking(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
+        """Сначала я думал заменить 2 - на pow() для этого и подключал Math"""
         return ((self.coeff_calorie_0_035 * self.weight_kg
-                + (self.get_mean_speed()**self.coeff_calorie_2
+                + (self.get_mean_speed()**2
                  // self.height_cm)
                 * self.coeff_calorie_0_029
                 * self.weight_kg) * self.duration_m
@@ -135,17 +134,21 @@ class Swimming(Training):
         return self.action * self.LEN_STEP / self.M_IN_KM
 
 
-TRANING_TYPE = {'SWM': Swimming,
-                'RUN': Running,
-                'WLK': SportsWalking}
+TRANING_TYPE: list = {'SWM': Swimming,
+                      'RUN': Running,
+                      'WLK': SportsWalking}
 
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
     if workout_type not in TRANING_TYPE:
-        raise ValueError('Не верный тип тренировки: {}.'
-                         'Допустимые значения: {}'
-                         .format(workout_type, TRANING_TYPE.keys()))
+        raise ValueError('Не верный тип тренировки: {}. '
+                         'Допустимые значения: {} '
+                         .format(workout_type, ", ".join(TRANING_TYPE)))
+    try:
+        TRANING_TYPE[workout_type](*data)
+    except TypeError:
+        print('Число параметров класса задано не верно ')
     return TRANING_TYPE[workout_type](*data)
 
 
