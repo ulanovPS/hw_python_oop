@@ -1,28 +1,25 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
+from inspect import signature
 
 
 @dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
-    """Можно записать одну строку в одну переменную"""
-    LINE_OUTPUT = ("Тип тренировки: {}; "
-                   "Длительность: {:.3f} ч.; "
-                   "Дистанция: {:.3f} км; "
-                   "Ср. скорость: {:.3f} км/ч; "
-                   "Потрачено ккал: {:.3f}.")
     training_type: str
     duration: float
     distance: float
     speed: float
     calories: float
+    """Можно записать одну строку в одну переменную"""
+    LINE_OUTPUT = ("Тип тренировки: {training_type}; "
+                   "Длительность: {duration:.3f} ч.; "
+                   "Дистанция: {distance:.3f} км; "
+                   "Ср. скорость: {speed:.3f} км/ч; "
+                   "Потрачено ккал: {calories:.3f}.")
 
     def get_message(self) -> str:
         """Получить дистанцию в км."""
-        return (self.LINE_OUTPUT.format(self.training_type,
-                                        self.duration,
-                                        self.distance,
-                                        self.speed,
-                                        self.calories))
+        return (self.LINE_OUTPUT.format(**asdict(self)))
 
 
 class Training:
@@ -30,8 +27,6 @@ class Training:
     LEN_STEP: float = 0.65  # stride length in meters
     M_IN_KM: float = 1000  # coefficient for converting meters to kilometers
     MIN_IN_HOUR: float = 60  # coefficient for converting minutes to hours
-    VAL_CALORIE_CALC_18: float = 18  # coefficient for calculating calorie
-    VAL_CALORIE_CALC_20: float = 20  # coefficient for calculating calorie
 
     def __init__(self,
                  action: int,  # action in training
@@ -66,6 +61,9 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
+    # coefficient for calculating calorie
+    VAL_CALORIE_CALC_18: float = 18
+    VAL_CALORIE_CALC_20: float = 20
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
@@ -78,25 +76,25 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    coeff_calorie_0_035: float = 0.035
-    coeff_calorie_0_029: float = 0.029
+    # coefficient for calculating calorie
+    VAL_CALORIE_CALC_0_035: float = 0.035
+    VAL_CALORIE_CALC_0_029: float = 0.029
 
     def __init__(self,
                  action: int,
                  duration: float,
                  weight: float,
-                 height: float,  # trainer's height in centimeters
+                 height: float,
                  ) -> None:
         super().__init__(action, duration, weight)
         self.height_cm = height
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        """Сначала я думал заменить 2 - на pow() для этого и подключал Math"""
-        return ((self.coeff_calorie_0_035 * self.weight_kg
+        return ((self.VAL_CALORIE_CALC_0_035 * self.weight_kg
                 + (self.get_mean_speed()**2
                  // self.height_cm)
-                * self.coeff_calorie_0_029
+                * self.VAL_CALORIE_CALC_0_029
                 * self.weight_kg) * self.duration_m
                 * self.MIN_IN_HOUR
                 )
@@ -104,9 +102,10 @@ class SportsWalking(Training):
 
 class Swimming(Training):
     """Тренировка: плавание."""
+    # coefficient for calculating calorie
     LEN_STEP: float = 1.38
-    coeff_calorie_1_1: float = 1.1
-    coeff_calorie_2: int = 2
+    VAL_CALORIE_CALC_1_1: float = 1.1
+    VAL_CALORIE_CALC_2: float = 2
 
     def __init__(self,
                  action: int,
@@ -126,8 +125,8 @@ class Swimming(Training):
 
     def get_spent_calories(self):
         """Получить количество затраченных калорий."""
-        return ((self.get_mean_speed() + self.coeff_calorie_1_1)
-                * self.coeff_calorie_2 * self.weight_kg)
+        return ((self.get_mean_speed() + self.VAL_CALORIE_CALC_1_1)
+                * self.VAL_CALORIE_CALC_2 * self.weight_kg)
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
@@ -145,11 +144,11 @@ def read_package(workout_type: str, data: list) -> Training:
         raise ValueError('Не верный тип тренировки: {}. '
                          'Допустимые значения: {} '
                          .format(workout_type, ", ".join(TRANING_TYPE)))
-    try:
-        TRANING_TYPE[workout_type](*data)
-    except TypeError:
-        print('Число параметров класса задано не верно ')
-    return TRANING_TYPE[workout_type](*data)
+    if (len(signature(TRANING_TYPE[workout_type].__init__).
+            parameters) - 1) == len(data):
+        return TRANING_TYPE[workout_type](*data)
+    else:
+        raise TypeError('Отсутсвуют параметры класса {}')
 
 
 def main(training: Training) -> None:
